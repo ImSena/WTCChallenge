@@ -57,4 +57,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    //firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+
+    //lifecycle
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    //icons
+    implementation(libs.androidx.material.icons.extended)
 }
