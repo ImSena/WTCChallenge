@@ -66,4 +66,11 @@ dependencies {
 
     //icons
     implementation(libs.androidx.material.icons.extended)
+
+    //navigation
+    implementation(libs.androidx.navigation.compose)
+
+    //session
+    implementation(libs.androidx.datastore.preferences)
+
 }
