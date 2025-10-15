@@ -40,13 +40,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.corecode.wtcchallenge.ui.theme.WTCChallengeTheme
 
 @Composable
-fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(
+        loginViewModel: LoginViewModel = viewModel(),
+        onLoginSuccess: () -> Unit
+) {
     val uiState by loginViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -57,6 +58,7 @@ fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
     LaunchedEffect(uiState.loginSuccess) {
         if(uiState.loginSuccess){
             Toast.makeText(context, "Login bem-sucedido!", Toast.LENGTH_SHORT).show()
+            onLoginSuccess()
         }
     }
 
@@ -149,13 +151,5 @@ fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-    }
-}
-
-@Preview(showBackground = true, name = "LoginScreen")
-@Composable
-fun LoginScreenPreview(modifier: Modifier = Modifier) {
-    WTCChallengeTheme(darkTheme = true) {
-        LoginScreen()
     }
 }
