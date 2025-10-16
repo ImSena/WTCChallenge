@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            WTCChallengeTheme(darkTheme = true) {
+            WTCChallengeTheme(darkTheme = false) {
                 AppNavigation()
             }
         }
