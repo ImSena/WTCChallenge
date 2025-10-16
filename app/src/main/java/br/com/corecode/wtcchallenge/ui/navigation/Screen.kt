@@ -15,8 +15,11 @@ sealed class Screen(val route: String, val title: String? = null, val icon: Imag
     object Campaigns : Screen("campaigns_screen", "Campanhas", Icons.Default.Campaign)
     object Profile : Screen("profile_screen", "Perfil", Icons.Default.Person)
 
-    object Conversation : Screen("conversation_screen/{chatId}"){
-        fun createRoute(chatId: String) = "conversation_screen/$chatId"
+    object Conversation : Screen("conversation_screen/{chatId}/{contactName}"){
+        fun createRoute(chatId: String, contactName: String): String{
+            val encodedContactName = java.net.URLEncoder.encode(contactName, "UTF-8")
+            return "conversation_screen/$chatId/$encodedContactName"
+        }
     }
 }
 

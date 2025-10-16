@@ -60,8 +60,8 @@ fun MainScreen(rootNavController: NavController) {
             modifier = Modifier.padding(innerPadding)
         ){
             composable(Screen.Chats.route){
-                ChatsScreen(onChatClick = { chatId ->
-                    rootNavController.navigate(Screen.Conversation.createRoute(chatId))
+                ChatsScreen(onChatClick = { chatId, contactName ->
+                    rootNavController.navigate(Screen.Conversation.createRoute(chatId, contactName))
                 })
             }
 

@@ -31,9 +31,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
                 onNavigationToMain = {
                     rootNavController.navigate(Screen.Main.route){
-                        rootNavController.navigate(Screen.Main.route){
-                            popUpTo(Screen.Splash.route) {inclusive = true}
-                        }
+                        popUpTo(Screen.Splash.route) {inclusive = true}
                     }
                 }
             )
@@ -59,10 +57,22 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
         composable(
             route = Screen.Conversation.route,
-            arguments = listOf(navArgument("chatId"){type = NavType.StringType})
+            arguments = listOf(
+                navArgument("chatId"){type = NavType.StringType},
+                navArgument("contactName"){type = NavType.StringType}
+            )
         ) { backStackEntry ->
             val chatId = backStackEntry.arguments?.getString("chatId")
-            ConversationScreen(chatId = chatId)
+            val contactName = backStackEntry.arguments?.getString("contactName")?.let {
+                java.net.URLDecoder.decode(it, "UTF-8")
+            }
+            ConversationScreen(
+                chatId = chatId,
+                contactName = contactName ?: "Contato",
+                onNavigateBack = {
+                    rootNavController.popBackStack()
+                }
+            )
 
         }
     }
