@@ -45,7 +45,7 @@ fun ClientCampaignCard(campaign: Campaign) {
                 verticalAlignment = Alignment.CenterVertically
             ){
                 campaign.actions.forEach { actionTitle ->
-                    TextButton(onClick = { Unit }) {
+                    TextButton(onClick = { }) {
                         Text(actionTitle.uppercase())
                     }
                 }
