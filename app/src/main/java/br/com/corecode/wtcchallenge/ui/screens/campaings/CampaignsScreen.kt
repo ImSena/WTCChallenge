@@ -1,42 +1,52 @@
 package br.com.corecode.wtcchallenge.ui.screens.campaings
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import br.com.corecode.wtcchallenge.ui.theme.WTCChallengeTheme
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import br.com.corecode.wtcchallenge.domain.model.Campaign
+import br.com.corecode.wtcchallenge.ui.screens.campaings.views.ClientCompaignsView
+import br.com.corecode.wtcchallenge.ui.screens.campaings.views.operator.OperatorCampaignsListView
 
 @Composable
-fun CampaignsScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Campanhas e Eventos",
-            style = MaterialTheme.typography.displayLarge
-        )
-        Text(
-            text = "Aqui serão exibidos os convites para eventos exclusivos e campanhas do WTC.",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 16.dp)
-        )
-    }
-}
+fun CampaignsScreen(typeUser: String = "operador") {
+    if (typeUser == "operador") {
+        val operatorNavController = rememberNavController()
 
-@Preview(showBackground = true)
-@Composable
-fun CampaignsScreenPreview() {
-    WTCChallengeTheme {
-        CampaignsScreen()
+        val sampleCampaigns = listOf(
+            Campaign("1", "Campanha Especial WTC", "Participe do nosso evento exclusivo...", listOf()),
+            Campaign("2", "Innovation Talks: Varejo", "Conecte-se com líderes do setor...", listOf())
+        )
+
+        NavHost(navController = operatorNavController, startDestination = "campaign_list") {
+            composable("campaign_list") {
+                OperatorCampaignsListView(
+                    campaigns = sampleCampaigns,
+                    onAddClick = { operatorNavController.navigate("create_edit_campaign") },
+                    onEditClick = { campaignId -> operatorNavController.navigate("create_edit_campaign/$campaignId") }
+                )
+            }
+
+            composable("create_edit_campaign") {
+                CreateEditCampaignScreen(
+                    campaignId = null,
+                    onNavigateBack = { operatorNavController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = "create_edit_campaign/{campaignId}",
+                arguments = listOf(navArgument("campaignId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                CreateEditCampaignScreen(
+                    campaignId = backStackEntry.arguments?.getString("campaignId"),
+                    onNavigateBack = { operatorNavController.popBackStack() }
+                )
+            }
+        }
+    } else {
+        ClientCompaignsView()
     }
 }
