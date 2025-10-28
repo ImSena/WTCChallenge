@@ -2,13 +2,10 @@ package br.com.corecode.wtcchallenge.domain.model
 
 import com.google.firebase.firestore.DocumentId
 
-data class Campaign(
+data class Message(
     @DocumentId
     val id: String = "",
-    val title: String = "",
-    val body: String = "",
-    val segment: String = "",
-    val actions: Map<String, String> = emptyMap(),
-
+    val senderId: String = "",
+    val text: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )
