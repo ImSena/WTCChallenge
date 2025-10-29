@@ -25,56 +25,53 @@ import br.com.corecode.wtcchallenge.ui.screens.campaings.components.ClientCampai
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ClientCompaignsView(modifier: Modifier = Modifier) {
-
-    val sampleCampaigns = listOf(
-        Campaign("1", "Campanha Especial WTC", "Participe do nosso evento exclusivo sobre Inovação e Mercado!", listOf("Inscrever-se", "Saiba Mais")),
-        Campaign("2", "Innovation Talks: Varejo", "Conecte-se com líderes do setor e descubra as tendências para 2026.", listOf("Ver Agenda", "Convidar")),
-        Campaign("3", "Almoço de Networking", "Amplie sua rede de contatos em nosso próximo encontro de C-Levels.", listOf("Confirmar Presença"))
-    )
-
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Campanhas e eventos") },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+fun ClientCompaignsView(
+    campaigns: List<Campaign>,
+    modifier: Modifier = Modifier,
+    onActionClick: (String) -> Unit = {}
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Campanhas e eventos") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { innerPadding ->
+        if (campaigns.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Campanhas e Eventos",
+                    style = MaterialTheme.typography.displayLarge
+                )
+                Text(
+                    text = "Aqui serão exibidos os convites para eventos exclusivos e campanhas do WTC.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
-        ) { innerPadding ->
-            if(sampleCampaigns.isEmpty()){
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Campanhas e Eventos",
-                        style = MaterialTheme.typography.displayLarge
-                    )
-                    Text(
-                        text = "Aqui serão exibidos os convites para eventos exclusivos e campanhas do WTC.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                }
-            }else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(items = sampleCampaigns) { campaign ->
-                        ClientCampaignCard(campaign)
-                    }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(items = campaigns) { campaign ->
+                    ClientCampaignCard(campaign, onActionClick = onActionClick)
                 }
             }
         }
+    }
 }

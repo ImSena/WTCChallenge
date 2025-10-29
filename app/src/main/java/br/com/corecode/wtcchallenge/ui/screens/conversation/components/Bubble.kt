@@ -59,7 +59,7 @@ fun Bubble(message: Message, isSentByCurrentUser: Boolean) {
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = message.timestamp,
+                text = message.timestamp.toString(),
                 color = textColor.copy(alpha = 0.7f),
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.align(Alignment.End)

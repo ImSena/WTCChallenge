@@ -12,16 +12,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import br.com.corecode.wtcchallenge.domain.model.Campaign
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEditCampaignScreen(
     campaignId: String?,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onSaveCampaign: (Campaign) -> Unit
 ) {
     val isEditing = campaignId != null
-    val context = LocalContext.current
 
     var segment by remember { mutableStateOf(if (isEditing) "CEOs" else "") }
     var title by remember { mutableStateOf(if (isEditing) "Campanha Especial WTC" else "") }
@@ -53,13 +54,44 @@ fun CreateEditCampaignScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Título da Campanha") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = message,
+                onValueChange = { message = it },
+                label = { Text("Mensagem") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = segment,
+                onValueChange = { segment = it },
+                label = { Text("Segmento") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    val toastMessage = if (isEditing) "Campanha Salva!" else "Campanha Disparada!"
-                    Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
-                    onNavigateBack()
+                    val campaign = Campaign(
+                        id = campaignId ?: java.util.UUID.randomUUID().toString(),
+                        title = title,
+                        body = message,
+                        segment = segment
+                    )
+                    onSaveCampaign(campaign)
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
@@ -69,5 +101,6 @@ fun CreateEditCampaignScreen(
                 )
             }
         }
+
     }
 }

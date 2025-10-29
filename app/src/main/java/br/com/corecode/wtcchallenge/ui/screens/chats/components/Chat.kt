@@ -81,7 +81,7 @@ fun Chat(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = chat.timestamp,
+                    text = chat.timestamp.toString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )

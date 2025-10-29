@@ -8,6 +8,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -19,9 +23,11 @@ import br.com.corecode.wtcchallenge.ui.screens.campaings.components.OperatorComp
 fun OperatorCampaignsListView(
     campaigns: List<Campaign>,
     onAddClick: () -> Unit,
-    onEditClick: (campaignId: String) -> Unit
+    onEditClick: (campaignId: String) -> Unit,
+    onDeleteClick: (campaignId: String) -> Unit,
 ) {
     val context = LocalContext.current
+    var campaignToDelete by remember { mutableStateOf<Campaign?>(null) }
 
     Scaffold(
         topBar = {
@@ -51,11 +57,35 @@ fun OperatorCampaignsListView(
                 OperatorCompaignCard(
                     campaign = campaign,
                     onEditClick = { onEditClick(campaign.id) },
-                    onDeleteClick = {
-                        Toast.makeText(context, "Excluir: ${campaign.title}", Toast.LENGTH_SHORT).show()
-                    }
+                    onDeleteClick = { campaignToDelete = campaign }
                 )
             }
+        }
+
+        if(campaignToDelete != null){
+            AlertDialog(
+                onDismissRequest = {campaignToDelete = null},
+                title = {Text("Confirmar Exclusão")},
+                text = {Text("Deseja realmente excluir a campanha \"${campaignToDelete?.title}\"?")},
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            campaignToDelete?.let { onDeleteClick(it.id) }
+                            campaignToDelete = null
+                        }
+                    ) {
+                        Text("Excluir")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {campaignToDelete = null}
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+
+            )
         }
     }
 }

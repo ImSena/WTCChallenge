@@ -19,14 +19,17 @@ import androidx.compose.ui.unit.dp
 import br.com.corecode.wtcchallenge.domain.model.Campaign
 
 @Composable
-fun ClientCampaignCard(campaign: Campaign) {
+fun ClientCampaignCard(
+    campaign: Campaign,
+    onActionClick: (String) -> Unit = {}
+) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
-        ){
+        ) {
             Text(
                 text = campaign.title,
                 style = MaterialTheme.typography.headlineMedium,
@@ -43,9 +46,9 @@ fun ClientCampaignCard(campaign: Campaign) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
-            ){
-                campaign.actions.forEach { actionTitle ->
-                    TextButton(onClick = { }) {
+            ) {
+                campaign.actions.values.forEach { actionTitle ->
+                    TextButton(onClick = { onActionClick(actionTitle) }) {
                         Text(actionTitle.uppercase())
                     }
                 }

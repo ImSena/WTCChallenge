@@ -1,30 +1,19 @@
 package br.com.corecode.wtcchallenge.ui.screens.campaings.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import br.com.corecode.wtcchallenge.domain.model.Campaign
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OperatorCompaignCard(
     campaign: Campaign,
@@ -34,37 +23,66 @@ fun OperatorCompaignCard(
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
-    ElevatedCard(modifier = modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.padding(16.dp)){
-            Column {
+    ElevatedCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+    ) {
+        Box(modifier = Modifier.padding(16.dp)) {
+
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = campaign.title,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                if(campaign.segment.isNotEmpty()){
+                    Text(
+                        text = campaign.segment,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
                 Text(
                     text = campaign.body,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             Box(
                 modifier = Modifier.align(Alignment.TopEnd)
-            ){
-                IconButton(onClick = {menuExpanded = true}) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Actions")
+            ) {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "Mais ações")
                 }
+
                 DropdownMenu(
                     expanded = menuExpanded,
-                    onDismissRequest = {menuExpanded = false}
+                    onDismissRequest = { menuExpanded = false }
                 ) {
-                    DropdownMenuItem(text = {Text("Editar")}, onClick = onEditClick)
-                    DropdownMenuItem(text = {Text("Excluir")}, onClick = onDeleteClick)
+                    DropdownMenuItem(
+                        text = { Text("Editar") },
+                        onClick = {
+                            menuExpanded = false
+                            onEditClick()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Excluir") },
+                        onClick = {
+                            menuExpanded = false
+                            onDeleteClick()
+                        }
+                    )
                 }
             }
         }
     }
-
 }

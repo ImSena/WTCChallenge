@@ -9,13 +9,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.corecode.wtcchallenge.ui.screens.chats.ChatViewModel
 import br.com.corecode.wtcchallenge.ui.screens.conversation.components.Bubble
 import br.com.corecode.wtcchallenge.ui.screens.conversation.components.MessageInputBar
 
 data class Message(
     val id: String,
     val text: String,
-    val timestamp: String,
+    val timestamp: Long,
     val senderId: String
 )
 
@@ -26,15 +28,13 @@ fun ConversationScreen(
     contactName: String?,
     onNavigateBack: () -> Unit
 ) {
+    val viewModel: ChatViewModel = viewModel()
     val currentUserId = "me"
+    val messagesState by viewModel.messages.collectAsState()
+    val messages = messagesState.getOrDefault(emptyList())
 
-    val sampleMessages = remember {
-        mutableStateListOf(
-            Message("1", "Olá! Como posso ajudar?", "10:00", "contact"),
-            Message("2", "Gostaria de confirmar a reunião de amanhã.", "10:01", "me"),
-            Message("3", "Claro. A reunião das 10h está confirmada. A sala já foi reservada.", "10:02", "contact"),
-            Message("4", "Perfeito, obrigado!", "10:03", "me")
-        )
+    LaunchedEffect(chatId) {
+        viewModel.selectChat(chatId.orEmpty())
     }
 
     Scaffold(
@@ -55,14 +55,7 @@ fun ConversationScreen(
         },
         bottomBar = {
             MessageInputBar { newMessageText ->
-                sampleMessages.add(
-                    Message(
-                        id = (sampleMessages.size + 1).toString(),
-                        text = newMessageText,
-                        timestamp = "10:05",
-                        senderId = currentUserId
-                    )
-                )
+                viewModel.sendMessage(newMessageText)
             }
         }
     ) { innerPadding ->
@@ -73,9 +66,14 @@ fun ConversationScreen(
                 .padding(horizontal = 8.dp),
             reverseLayout = true
         ) {
-            items(items = sampleMessages.reversed()){ message ->
+            items(items = messages.reversed()){ message ->
                 Bubble(
-                    message = message,
+                    message = Message(
+                        id = message.id,
+                        text = message.text,
+                        timestamp = message.timestamp,
+                        senderId = message.senderId
+                    ),
                     isSentByCurrentUser = message.senderId == currentUserId
                 )
             }
