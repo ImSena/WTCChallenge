@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import br.com.corecode.wtcchallenge.ui.screens.chats.Chat
+import br.com.corecode.wtcchallenge.ui.utils.formatChatTimestamp
 
 @Composable
 fun Chat(
@@ -81,7 +82,7 @@ fun Chat(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = chat.timestamp.toString(),
+                    text = formatChatTimestamp(chat.timestamp),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )

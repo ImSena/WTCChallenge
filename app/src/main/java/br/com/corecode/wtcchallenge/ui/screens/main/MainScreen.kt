@@ -23,8 +23,17 @@ import br.com.corecode.wtcchallenge.ui.screens.chats.ChatsScreen
 import br.com.corecode.wtcchallenge.ui.screens.profile.ProfileScreen
 
 @Composable
-fun MainScreen(rootNavController: NavController) {
+fun MainScreen(
+    rootNavController: NavController,
+    isOperator: Boolean
+) {
     val tabsNavController = rememberNavController()
+
+    val bottomScreens = if (isOperator) {
+        listOf(Screen.Chats, Screen.Campaigns, Screen.Profile)
+    } else {
+        listOf(Screen.Chats, Screen.Profile)
+    }
 
     Scaffold(
         bottomBar = {
@@ -32,14 +41,14 @@ fun MainScreen(rootNavController: NavController) {
                 val navBackStackEntry by tabsNavController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
 
-                bottomNavItems.forEach { screen ->
+                bottomScreens.forEach { screen ->
                     NavigationBarItem(
                         selected = currentDestination?.hierarchy?.any {
                             it.route == screen.route
                         } == true,
                         onClick = {
-                            tabsNavController.navigate(screen.route){
-                                popUpTo(tabsNavController.graph.findStartDestination().id){
+                            tabsNavController.navigate(screen.route) {
+                                popUpTo(tabsNavController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
                                 launchSingleTop = true
@@ -47,9 +56,8 @@ fun MainScreen(rootNavController: NavController) {
                             }
                         },
                         label = { Text(screen.title!!) },
-                        icon = { Icon(screen.icon!!, contentDescription = screen.title!! ) }
+                        icon = { Icon(screen.icon!!, contentDescription = screen.title!!) }
                     )
-
                 }
             }
         }
@@ -58,22 +66,24 @@ fun MainScreen(rootNavController: NavController) {
             navController = tabsNavController,
             startDestination = Screen.Chats.route,
             modifier = Modifier.padding(innerPadding)
-        ){
-            composable(Screen.Chats.route){
+        ) {
+            composable(Screen.Chats.route) {
                 ChatsScreen(onChatClick = { chatId, contactName ->
                     rootNavController.navigate(Screen.Conversation.createRoute(chatId, contactName))
-                })
+                }, isOperator)
             }
 
             composable(Screen.Campaigns.route) { CampaignsScreen() }
-            composable(Screen.Profile.route) { ProfileScreen(
-                onLoggedOut = {
-                    rootNavController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
-            ) }
-        }
 
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    onLoggedOut = {
+                        rootNavController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+            }
+        }
     }
 }

@@ -17,22 +17,29 @@ class SessionRepository(context: Context) : ISessionRepository {
 
     private object PreferencesKeys {
         val USER_UID = stringPreferencesKey("user_uid")
+        val USER_ROLE = stringPreferencesKey("user_role")
     }
 
-    override suspend fun saveSession(uid: String) {
+    override suspend fun saveSession(uid: String, role: String) {
         dataStore.edit{preferences ->
             preferences[PreferencesKeys.USER_UID] = uid
+            preferences[PreferencesKeys.USER_ROLE] = role
         }
     }
 
     override suspend fun clearSession() {
         dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.USER_UID)
+            preferences.remove(PreferencesKeys.USER_ROLE)
         }
     }
 
     override val activeSessionUid: Flow<String?> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.USER_UID]
+    }
+
+    override val activeUserRole: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.USER_ROLE]
     }
 
 }

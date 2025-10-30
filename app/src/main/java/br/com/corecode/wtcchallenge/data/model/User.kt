@@ -1,6 +1,12 @@
 package br.com.corecode.wtcchallenge.data.model
 
+import com.google.firebase.firestore.IgnoreExtraProperties
+
+@IgnoreExtraProperties
 data class User(
-    val uid: String,
-    val email: String?
+    val uid: String = "",
+    val email: String? = "",
+    val name: String = "",
+    val avatarUrl: String = "",
+    val role: String = "cliente"
 )

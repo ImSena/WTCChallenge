@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import br.com.corecode.wtcchallenge.domain.model.Campaign
-import br.com.corecode.wtcchallenge.ui.screens.campaings.components.OperatorCompaignCard
+import br.com.corecode.wtcchallenge.ui.screens.campaings.components.OperatorCampaignCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,6 +25,7 @@ fun OperatorCampaignsListView(
     onAddClick: () -> Unit,
     onEditClick: (campaignId: String) -> Unit,
     onDeleteClick: (campaignId: String) -> Unit,
+    onDispararClick: (campaign: Campaign) -> Unit
 ) {
     val context = LocalContext.current
     var campaignToDelete by remember { mutableStateOf<Campaign?>(null) }
@@ -54,10 +55,11 @@ fun OperatorCampaignsListView(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(campaigns) { campaign ->
-                OperatorCompaignCard(
+                OperatorCampaignCard(
                     campaign = campaign,
                     onEditClick = { onEditClick(campaign.id) },
-                    onDeleteClick = { campaignToDelete = campaign }
+                    onDeleteClick = { campaignToDelete = campaign },
+                    onDispararClick = {onDispararClick(campaign)}
                 )
             }
         }

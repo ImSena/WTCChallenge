@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            WTCChallengeTheme(darkTheme = false) {
+            WTCChallengeTheme(darkTheme = true) {
                 NotificationPermissionHandler {
                     AppNavigation()
                 }

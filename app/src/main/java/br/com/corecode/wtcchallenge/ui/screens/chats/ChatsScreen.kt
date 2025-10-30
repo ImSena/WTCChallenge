@@ -21,25 +21,23 @@ data class Chat(
     val id: String,
     val contactName: String,
     val lastMessage: String,
-    val timestamp: Timestamp,
+    val timestamp: Long,
     val unreadCount: Int = 0
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatsScreen(onChatClick: (chatId: String, contactName: String) -> Unit) {
+fun ChatsScreen(onChatClick: (chatId: String, contactName: String) -> Unit, isOperator: Boolean) {
     val context = LocalContext.current
     val sessionRepo = SessionRepository(context)
     val viewModel: ChatViewModel = viewModel(
         factory = ChatViewModelFactory(sessionRepo)
     )
 
+    val currentUserId by sessionRepo.activeSessionUid.collectAsState(initial = null)
 
     val chatState by viewModel.chatList.collectAsState()
     val chats = chatState.getOrDefault(emptyList())
-
-    LaunchedEffect(Unit) { viewModel.observeChats() }
-
 
     Scaffold(
         topBar = {
@@ -52,13 +50,16 @@ fun ChatsScreen(onChatClick: (chatId: String, contactName: String) -> Unit) {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { Unit},
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Nova Conversa")
+            if(isOperator){
+                FloatingActionButton(
+                    onClick = { Unit},
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Nova Conversa")
+                }
             }
+
         }
     ) {innerPadding ->
         LazyColumn(modifier = Modifier
@@ -66,12 +67,16 @@ fun ChatsScreen(onChatClick: (chatId: String, contactName: String) -> Unit) {
             .padding(innerPadding)
         ) {
             items(items = chats){chat->
+                val otherParticipantInfo = chat.participantsDetails
+                    .filterKeys { it != currentUserId }
+                    .values
+                    .firstOrNull()
                 Chat(
                     chat = Chat(
-                        id = chat.id,
-                        contactName = chat.participantsDetails.values.firstOrNull()?.name ?: "Contato",
+                        id = chat.id.ifEmpty { chat.id },
+                        contactName = otherParticipantInfo?.name ?: "Contato",
                         lastMessage = chat.lastMessage,
-                        timestamp = Timestamp(chat.lastMessageTimestamp)
+                        timestamp = chat.lastMessageTimestamp
                     ),
                     onChatClick = {chatId, contactName ->
                         onChatClick(chatId, contactName)

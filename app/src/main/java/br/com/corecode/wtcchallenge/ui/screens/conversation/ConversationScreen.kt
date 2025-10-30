@@ -8,9 +8,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.corecode.wtcchallenge.data.repository.SessionRepository
+import br.com.corecode.wtcchallenge.domain.model.RichMessage
 import br.com.corecode.wtcchallenge.ui.screens.chats.ChatViewModel
+import br.com.corecode.wtcchallenge.ui.screens.chats.ChatViewModelFactory
 import br.com.corecode.wtcchallenge.ui.screens.conversation.components.Bubble
 import br.com.corecode.wtcchallenge.ui.screens.conversation.components.MessageInputBar
 
@@ -18,7 +22,9 @@ data class Message(
     val id: String,
     val text: String,
     val timestamp: Long,
-    val senderId: String
+    val senderId: String,
+    val type: String,
+    val richMessage: RichMessage?
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,8 +34,13 @@ fun ConversationScreen(
     contactName: String?,
     onNavigateBack: () -> Unit
 ) {
-    val viewModel: ChatViewModel = viewModel()
-    val currentUserId = "me"
+    val context = LocalContext.current
+    val sessionRepo = SessionRepository(context)
+    val viewModel: ChatViewModel = viewModel(
+        factory = ChatViewModelFactory(sessionRepo)
+    )
+
+    val currentUserId = sessionRepo.activeSessionUid.collectAsState(initial = "").value
     val messagesState by viewModel.messages.collectAsState()
     val messages = messagesState.getOrDefault(emptyList())
 
@@ -72,7 +83,9 @@ fun ConversationScreen(
                         id = message.id,
                         text = message.text,
                         timestamp = message.timestamp,
-                        senderId = message.senderId
+                        senderId = message.senderId,
+                        type = message.type,
+                        richMessage = message.richMessage
                     ),
                     isSentByCurrentUser = message.senderId == currentUserId
                 )

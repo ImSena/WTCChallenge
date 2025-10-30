@@ -7,8 +7,13 @@ data class Campaign(
     val id: String = "",
     val title: String = "",
     val body: String = "",
-    val segment: String = "",
-    val actions: Map<String, String> = emptyMap(),
+    val mainUrl: String = "",
+    val btn1Title: String = "",
+    val btn1Url: String = "",
 
-    val timestamp: Long = System.currentTimeMillis()
-)
+    val btn2Title: String = "",
+    val btn2Url: String = "",
+    val timestamp: Long = 0L
+){
+    constructor(): this("", "", "", "", "", "", "", "", 0L)
+}

@@ -6,6 +6,10 @@ data class Message(
     @DocumentId
     val id: String = "",
     val senderId: String = "",
+    val timestamp: Long = 0L,
+    val type: String = "text",
     val text: String = "",
-    val timestamp: Long = System.currentTimeMillis()
-)
+    val richMessage: RichMessage? = null
+){
+    constructor() : this("", "", 0L, "text", "", null)
+}

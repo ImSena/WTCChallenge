@@ -12,21 +12,56 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import br.com.corecode.wtcchallenge.domain.model.Campaign
-
+import br.com.corecode.wtcchallenge.domain.model.Campaign // IMPORT CORRETO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEditCampaignScreen(
     campaignId: String?,
     onNavigateBack: () -> Unit,
-    onSaveCampaign: (Campaign) -> Unit
+    viewModel: CampaignsViewModel
 ) {
-    val isEditing = campaignId != null
+    val context = LocalContext.current
+    val isEditing = !campaignId.isNullOrEmpty()
 
-    var segment by remember { mutableStateOf(if (isEditing) "CEOs" else "") }
-    var title by remember { mutableStateOf(if (isEditing) "Campanha Especial WTC" else "") }
-    var message by remember { mutableStateOf(if (isEditing) "Participe do nosso evento exclusivo!" else "") }
+    var title by remember { mutableStateOf("") }
+    var body by remember { mutableStateOf("") }
+    var mainUrl by remember { mutableStateOf("") }
+    var btn1Title by remember { mutableStateOf("") }
+    var btn1Url by remember { mutableStateOf("") }
+    var btn2Title by remember { mutableStateOf("") }
+    var btn2Url by remember { mutableStateOf("") }
+
+    val campaignState by viewModel.selectedCampaign.collectAsState()
+
+    LaunchedEffect(campaignId) {
+        if (isEditing) {
+            viewModel.getCampaignById(campaignId!!)
+        } else {
+            viewModel.clearSelectedCampaign()
+        }
+    }
+
+    LaunchedEffect(campaignState) {
+        val result = campaignState
+        if (isEditing && result.isSuccess) {
+            result.getOrNull()?.let { campaign ->
+                title = campaign.title
+                body = campaign.body
+                mainUrl = campaign.mainUrl
+                btn1Title = campaign.btn1Title
+                btn1Url = campaign.btn1Url
+                btn2Title = campaign.btn2Title
+                btn2Url = campaign.btn2Url
+            }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearSelectedCampaign()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -54,6 +89,7 @@ fun CreateEditCampaignScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            Text("Conteúdo Principal", style = MaterialTheme.typography.titleMedium, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -66,18 +102,58 @@ fun CreateEditCampaignScreen(
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = message,
-                onValueChange = { message = it },
-                label = { Text("Mensagem") },
-                modifier = Modifier.fillMaxWidth()
+                value = body,
+                onValueChange = { body = it },
+                label = { Text("Corpo da Mensagem") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
             )
 
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = segment,
-                onValueChange = { segment = it },
-                label = { Text("Segmento") },
+                value = mainUrl,
+                onValueChange = { mainUrl = it },
+                label = { Text("URL Principal (clique no card)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider()
+            Spacer(Modifier.height(24.dp))
+
+            Text("Ação 1 (Opcional)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = btn1Title,
+                onValueChange = { btn1Title = it },
+                label = { Text("Título Botão 1 (ex: Inscrever-se)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(16.dp))
+            OutlinedTextField(
+                value = btn1Url,
+                onValueChange = { btn1Url = it },
+                label = { Text("URL Botão 1") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(24.dp))
+            Text("Ação 2 (Opcional)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = btn2Title,
+                onValueChange = { btn2Title = it },
+                label = { Text("Título Botão 2 (ex: Saiba Mais)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(16.dp))
+            OutlinedTextField(
+                value = btn2Url,
+                onValueChange = { btn2Url = it },
+                label = { Text("URL Botão 2") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -86,21 +162,40 @@ fun CreateEditCampaignScreen(
             Button(
                 onClick = {
                     val campaign = Campaign(
-                        id = campaignId ?: java.util.UUID.randomUUID().toString(),
+                        id = campaignId ?: "",
                         title = title,
-                        body = message,
-                        segment = segment
+                        body = body,
+                        mainUrl = mainUrl,
+                        btn1Title = btn1Title,
+                        btn1Url = btn1Url,
+                        btn2Title = btn2Title,
+                        btn2Url = btn2Url
                     )
-                    onSaveCampaign(campaign)
+
+                    viewModel.saveCampaign(campaign) { result ->
+                        if (result.isSuccess) {
+                            Toast.makeText(context, "Campanha salva!", Toast.LENGTH_SHORT).show()
+                            onNavigateBack() // Volta para a lista
+                        } else {
+                            Toast.makeText(context, "Erro ao salvar: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
                 Text(
-                    text = if (isEditing) "SALVAR ALTERAÇÕES" else "DISPARAR CAMPANHA",
+                    text = if (isEditing) "SALVAR ALTERAÇÕES" else "CRIAR CAMPANHA",
                     style = MaterialTheme.typography.labelLarge
                 )
             }
-        }
 
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                "Atenção: 'Disparar' a campanha é feito na tela de lista, após salvar.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

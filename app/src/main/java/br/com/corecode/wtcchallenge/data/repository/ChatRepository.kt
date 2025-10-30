@@ -11,6 +11,7 @@ import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
@@ -21,18 +22,28 @@ class ChatRepository : IChatRepository {
     private val TAG = "ChatRepository"
 
     override fun getChatList(userId: String): Flow<Result<List<Chat>>> {
-        return chatsCollection
-            .whereArrayContains("participants", userId)
-            .orderBy("lastMessageTimestamp", Query.Direction.DESCENDING)
+        val privateChatsFlow = chatsCollection
+            .whereArrayContains("participantsChat", userId)
             .snapshots()
-            .map { snapshot ->
-                Log.d(TAG, "Lista de chats atualizada")
-                Result.success(snapshot.toObjects<Chat>())
-            }
-            .catch { e ->
-                Log.e(TAG, "Erro ao ouvir lista de chats", e)
-                emit(Result.failure(e))
-            }
+
+        val broadcastChatsFlow = chatsCollection
+            .whereEqualTo("isBroadcast", true)
+            .snapshots()
+
+        return privateChatsFlow.combine(broadcastChatsFlow) { privateSnapshot, broadcastSnapshot ->
+            val privateChats = privateSnapshot.toObjects<Chat>()
+            val broadcastChats = broadcastSnapshot.toObjects<Chat>()
+
+            val allChats = (privateChats + broadcastChats)
+                .distinctBy { it.id }
+                .sortedByDescending { it.lastMessageTimestamp }
+
+            Log.d(TAG, "Lista de chats combinada atualizada")
+            Result.success(allChats)
+        }.catch{e ->
+            Log.e(TAG, "Erro ao ouvir lista de chats combinada", e)
+            emit(Result.failure(e))
+        }
     }
 
     override fun getMessages(chatId: String): Flow<Result<List<Message>>> {

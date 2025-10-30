@@ -1,12 +1,16 @@
 package br.com.corecode.wtcchallenge.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import br.com.corecode.wtcchallenge.data.repository.SessionRepository
 import br.com.corecode.wtcchallenge.ui.screens.auth.LoginScreen
 import br.com.corecode.wtcchallenge.ui.screens.conversation.ConversationScreen
 import br.com.corecode.wtcchallenge.ui.screens.main.MainScreen
@@ -15,6 +19,9 @@ import br.com.corecode.wtcchallenge.ui.screens.splash.SplashScreen
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
     val rootNavController = rememberNavController()
+    val sessionRepository: SessionRepository = SessionRepository(LocalContext.current)
+    val role by sessionRepository.activeUserRole.collectAsState(initial = null)
+    val isOperator = role == "operador"
 
     NavHost(
         navController = rootNavController,
@@ -51,7 +58,10 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         }
 
         composable (Screen.Main.route) {
-            MainScreen(rootNavController = rootNavController)
+            MainScreen(
+                rootNavController = rootNavController,
+                isOperator
+            )
         }
 
         composable(

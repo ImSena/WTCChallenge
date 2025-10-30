@@ -6,11 +6,12 @@ data class Chat(
     @DocumentId
     val id: String = "",
 
-    val participants: List<String> = emptyList(),
+    val participantsChat: List<String> = emptyList(),
 
     val lastMessage: String = "",
     val lastMessageTimestamp: Long = 0,
-    val participantsDetails: Map<String, ParticipantInfo> = emptyMap()
+    val participantsDetails: Map<String, ParticipantInfo> = emptyMap(),
+    val isBroadcast: Boolean = false
 )
 
 data class ParticipantInfo(
