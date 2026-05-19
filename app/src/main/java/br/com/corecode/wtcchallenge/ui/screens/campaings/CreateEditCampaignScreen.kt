@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import br.com.corecode.wtcchallenge.domain.model.Campaign // IMPORT CORRETO
+import br.com.corecode.wtcchallenge.domain.model.Campaign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,17 +43,14 @@ fun CreateEditCampaignScreen(
     }
 
     LaunchedEffect(campaignState) {
-        val result = campaignState
-        if (isEditing && result.isSuccess) {
-            result.getOrNull()?.let { campaign ->
-                title = campaign.title
-                body = campaign.body
-                mainUrl = campaign.mainUrl
-                btn1Title = campaign.btn1Title
-                btn1Url = campaign.btn1Url
-                btn2Title = campaign.btn2Title
-                btn2Url = campaign.btn2Url
-            }
+        campaignState.getOrNull()?.let { campaign ->
+            title = campaign.title ?: ""
+            body = campaign.body ?: ""
+            mainUrl = campaign.mainUrl ?: ""
+            btn1Title = campaign.btn1Title ?: ""
+            btn1Url = campaign.btn1Url ?: ""
+            btn2Title = campaign.btn2Title ?: ""
+            btn2Url = campaign.btn2Url ?: ""
         }
     }
 
@@ -174,10 +171,10 @@ fun CreateEditCampaignScreen(
 
                     viewModel.saveCampaign(campaign) { result ->
                         if (result.isSuccess) {
-                            Toast.makeText(context, "Campanha salva!", Toast.LENGTH_SHORT).show()
-                            onNavigateBack() // Volta para a lista
+                            Toast.makeText(context, "Campanha salva com sucesso!", Toast.LENGTH_SHORT).show()
+                            onNavigateBack()
                         } else {
-                            Toast.makeText(context, "Erro ao salvar: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Erro ao salvar: ${result.exceptionOrNull()?.message}", Toast.LENGTH_LONG).show()
                         }
                     }
                 },

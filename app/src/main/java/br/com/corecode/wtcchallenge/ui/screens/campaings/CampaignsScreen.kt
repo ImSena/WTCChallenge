@@ -21,7 +21,7 @@ fun CampaignsScreen() {
     val context = LocalContext.current
     val sessionRepo = SessionRepository(context)
     val viewModel: CampaignsViewModel = viewModel(
-        factory = CampaignsViewModelFactory(sessionRepo)
+        factory = CampaignsViewModelFactory(context, sessionRepo)
     )
     val campaignState by viewModel.campaignsState.collectAsState()
     val campaigns = campaignState.getOrDefault(emptyList())
@@ -37,17 +37,22 @@ fun CampaignsScreen() {
                     OperatorCampaignsListView(
                         campaigns = campaigns,
                         onAddClick = { operatorNavController.navigate("create_edit_campaign") },
-                        onEditClick = { campaignId -> operatorNavController.navigate("create_edit_campaign/$campaignId") },
-                        onDeleteClick = {campaignId ->
-                            viewModel.deleteCampaign(campaignId){result ->
+                        onEditClick = { campaignId ->
+                            if (!campaignId.isNullOrBlank()) {
+                                operatorNavController.navigate("create_edit_campaign?campaignId=$campaignId")
+                            } else {
+                                Toast.makeText(context, "ID da campanha inválido para edição", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onDeleteClick = { campaignId ->
+                            viewModel.deleteCampaign(campaignId) { result ->
                                 if(result.isSuccess){
                                     Toast.makeText(context, "Campanha deletada!", Toast.LENGTH_SHORT).show()
-                                }else{
+                                } else {
                                     Toast.makeText(context, "Erro ao excluir!", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },
-
                         onDispararClick = { campaign ->
                             viewModel.dispararCampanha(campaign) { result ->
                                 if (result.isSuccess) {
@@ -60,17 +65,13 @@ fun CampaignsScreen() {
                     )
                 }
 
-                composable("create_edit_campaign") {
-                    CreateEditCampaignScreen(
-                        campaignId = null,
-                        viewModel = viewModel,
-                        onNavigateBack = { operatorNavController.popBackStack() },
-                    )
-                }
-
                 composable(
-                    route = "create_edit_campaign/{campaignId}",
-                    arguments = listOf(navArgument("campaignId") { type = NavType.StringType })
+                    route = "create_edit_campaign?campaignId={campaignId}",
+                    arguments = listOf(navArgument("campaignId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    })
                 ) { backStackEntry ->
                     val campaignId = backStackEntry.arguments?.getString("campaignId")
                     CreateEditCampaignScreen(

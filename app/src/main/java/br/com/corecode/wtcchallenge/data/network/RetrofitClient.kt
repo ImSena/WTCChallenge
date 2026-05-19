@@ -50,4 +50,8 @@ object RetrofitClient {
         return createRetrofit(tokenProvider)
             .create(ChatApiService::class.java)
     }
+
+    fun getCampaignService(tokenProvider: () -> String?): CampaignApiService {
+        return createRetrofit(tokenProvider).create(CampaignApiService::class.java)
+    }
 }
