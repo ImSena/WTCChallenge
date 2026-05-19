@@ -37,7 +37,7 @@ fun ConversationScreen(
     val context = LocalContext.current
     val sessionRepo = SessionRepository(context)
     val viewModel: ChatViewModel = viewModel(
-        factory = ChatViewModelFactory(sessionRepo)
+        factory = ChatViewModelFactory(context, sessionRepo)
     )
 
     val currentUserId = sessionRepo.activeSessionUid.collectAsState(initial = "").value

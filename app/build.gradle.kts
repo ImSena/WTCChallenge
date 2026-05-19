@@ -75,4 +75,7 @@ dependencies {
     //session
     implementation(libs.androidx.datastore.preferences)
 
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+
 }

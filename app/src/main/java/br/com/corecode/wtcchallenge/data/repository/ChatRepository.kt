@@ -1,89 +1,85 @@
 package br.com.corecode.wtcchallenge.data.repository
 
+import android.content.Context
 import android.util.Log
+import br.com.corecode.wtcchallenge.data.network.RetrofitClient
 import br.com.corecode.wtcchallenge.domain.model.Chat
 import br.com.corecode.wtcchallenge.domain.model.Message
 import br.com.corecode.wtcchallenge.domain.repository.IChatRepository
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.snapshots
-import com.google.firebase.firestore.ktx.toObjects
-import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
-class ChatRepository : IChatRepository {
+class ChatRepository(
+    context: Context,
+    private val sessionRepository: SessionRepository = SessionRepository(context)
+) : IChatRepository {
 
-    private val db = Firebase.firestore
-    private val chatsCollection = db.collection("chats")
-    private val TAG = "ChatRepository"
-
-    override fun getChatList(userId: String): Flow<Result<List<Chat>>> {
-        val privateChatsFlow = chatsCollection
-            .whereArrayContains("participantsChat", userId)
-            .snapshots()
-
-        val broadcastChatsFlow = chatsCollection
-            .whereEqualTo("isBroadcast", true)
-            .snapshots()
-
-        return privateChatsFlow.combine(broadcastChatsFlow) { privateSnapshot, broadcastSnapshot ->
-            val privateChats = privateSnapshot.toObjects<Chat>()
-            val broadcastChats = broadcastSnapshot.toObjects<Chat>()
-
-            val allChats = (privateChats + broadcastChats)
-                .distinctBy { it.id }
-                .sortedByDescending { it.lastMessageTimestamp }
-
-            Log.d(TAG, "Lista de chats combinada atualizada")
-            Result.success(allChats)
-        }.catch{e ->
-            Log.e(TAG, "Erro ao ouvir lista de chats combinada", e)
-            emit(Result.failure(e))
+    private val chatService = RetrofitClient.getChatService {
+        runBlocking(Dispatchers.IO) {
+            try {
+                sessionRepository.activeJwtToken.first()
+            } catch (e: Exception) {
+                null
+            }
         }
     }
+    private val TAG = "ChatRepository"
 
-    override fun getMessages(chatId: String): Flow<Result<List<Message>>> {
-        return chatsCollection.document(chatId)
-            .collection("messages")
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-            .limitToLast(50)
-            .snapshots()
-            .map { snapshot ->
-                Log.d(TAG, "Novas mensagens no chat $chatId")
-                Result.success(snapshot.toObjects<Message>())
-            }
-            .catch { e ->
-                Log.e(TAG, "Erro ao ouvir mensagens do chat $chatId", e)
+    override fun getChatList(userId: String): Flow<Result<List<Chat>>> = flow {
+        while (true) {
+            try {
+                val response = chatService.getUserInbox(userId)
+                if (response.isSuccessful && response.body() != null) {
+                    emit(Result.success(response.body()!!))
+                } else {
+                    emit(Result.failure(Exception("Erro ao buscar caixa de entrada: ${response.code()}")))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Falha na conexão de rede do Inbox", e)
                 emit(Result.failure(e))
             }
-    }
+            delay(4000)
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override fun getMessages(chatId: String): Flow<Result<List<Message>>> = flow {
+        while (true) {
+            try {
+                val response = chatService.getChatMessages(chatId)
+                if (response.isSuccessful && response.body() != null) {
+                    emit(Result.success(response.body()!!))
+                } else {
+                    emit(Result.failure(Exception("Erro ao buscar mensagens: ${response.code()}")))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Falha na conexão de rede do Chat", e)
+                emit(Result.failure(e))
+            }
+            delay(2000)
+        }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun sendMessage(chatId: String, message: Message): Result<Unit> {
-        return try {
-            val chatDocRef = chatsCollection.document(chatId)
-            val messagesColRef = chatDocRef.collection("messages")
-            messagesColRef.add(message).await()
-
-            val chatUpdates = mapOf(
-                "lastMessage" to message.text,
-                "lastMessageTimestamp" to message.timestamp
-            )
-            chatDocRef.update(chatUpdates).await()
-
-            Log.d(TAG, "Mensagem enviada no chat $chatId")
-
-            // TODO: Aqui é onde um Cloud Function entraria em ação
-            // para ler essa nova mensagem e disparar o Push (FCM)
-            // para os outros participantes do chat.
-
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Erro ao enviar mensagem", e)
-            Result.failure(e)
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = chatService.sendMessage(chatId, message)
+                if (response.isSuccessful) {
+                    Log.d(TAG, "Mensagem persistida no MongoDB e Push disparado pelo Spring!")
+                    Result.success(Unit)
+                } else {
+                    Log.e(TAG, "Erro retornado pela API Spring: ${response.code()}")
+                    Result.failure(Exception("Falha ao enviar mensagem via HTTP API."))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exceção de rede ao enviar mensagem", e)
+                Result.failure(e)
+            }
         }
     }
 }

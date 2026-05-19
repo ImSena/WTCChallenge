@@ -29,7 +29,7 @@ fun CampaignsScreen() {
     val userRole by viewModel.userRole.collectAsState()
 
     if(userRole != null){
-        if (userRole == "operador") {
+        if (userRole == "OPERADOR") {
             val operatorNavController = rememberNavController()
 
             NavHost(navController = operatorNavController, startDestination = "campaign_list") {

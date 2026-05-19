@@ -21,7 +21,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
     val rootNavController = rememberNavController()
     val sessionRepository: SessionRepository = SessionRepository(LocalContext.current)
     val role by sessionRepository.activeUserRole.collectAsState(initial = null)
-    val isOperator = role == "operador"
+    val isOperator = role == "OPERADOR"
 
     NavHost(
         navController = rootNavController,

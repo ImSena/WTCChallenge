@@ -31,7 +31,7 @@ fun ChatsScreen(onChatClick: (chatId: String, contactName: String) -> Unit, isOp
     val context = LocalContext.current
     val sessionRepo = SessionRepository(context)
     val viewModel: ChatViewModel = viewModel(
-        factory = ChatViewModelFactory(sessionRepo)
+        factory = ChatViewModelFactory(context, sessionRepo)
     )
 
     val currentUserId by sessionRepo.activeSessionUid.collectAsState(initial = null)
@@ -49,18 +49,18 @@ fun ChatsScreen(onChatClick: (chatId: String, contactName: String) -> Unit, isOp
                 )
             )
         },
-        floatingActionButton = {
-            if(isOperator){
-                FloatingActionButton(
-                    onClick = { Unit},
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Nova Conversa")
-                }
-            }
-
-        }
+//        floatingActionButton = {
+//            if(isOperator){
+//                FloatingActionButton(
+//                    onClick = { Unit},
+//                    containerColor = MaterialTheme.colorScheme.secondary,
+//                    contentColor = MaterialTheme.colorScheme.onSecondary
+//                ) {
+//                    Icon(Icons.Filled.Add, contentDescription = "Nova Conversa")
+//                }
+//            }
+//
+//        }
     ) {innerPadding ->
         LazyColumn(modifier = Modifier
             .fillMaxSize()

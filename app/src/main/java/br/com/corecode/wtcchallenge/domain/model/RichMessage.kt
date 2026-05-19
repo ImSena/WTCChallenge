@@ -12,8 +12,8 @@ data class RichMessage(
 }
 
 data class RichMessageAction(
-    val action: String = "", // "btn1" [cite: 596]
-    val title: String = ""   // "Inscrever-se" [cite: 596]
+    val action: String = "",
+    val title: String = ""
 ) {
     constructor() : this("", "")
 }

@@ -18,12 +18,14 @@ class SessionRepository(context: Context) : ISessionRepository {
     private object PreferencesKeys {
         val USER_UID = stringPreferencesKey("user_uid")
         val USER_ROLE = stringPreferencesKey("user_role")
+        val JWT_TOKEN = stringPreferencesKey("jwt_token")
     }
 
-    override suspend fun saveSession(uid: String, role: String) {
+    override suspend fun saveSession(uid: String, role: String, token: String) {
         dataStore.edit{preferences ->
             preferences[PreferencesKeys.USER_UID] = uid
             preferences[PreferencesKeys.USER_ROLE] = role
+            preferences[PreferencesKeys.JWT_TOKEN] = token
         }
     }
 
@@ -31,6 +33,7 @@ class SessionRepository(context: Context) : ISessionRepository {
         dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.USER_UID)
             preferences.remove(PreferencesKeys.USER_ROLE)
+            preferences.remove(PreferencesKeys.JWT_TOKEN)
         }
     }
 
@@ -40,6 +43,10 @@ class SessionRepository(context: Context) : ISessionRepository {
 
     override val activeUserRole: Flow<String?> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.USER_ROLE]
+    }
+
+    val activeJwtToken: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.JWT_TOKEN]
     }
 
 }

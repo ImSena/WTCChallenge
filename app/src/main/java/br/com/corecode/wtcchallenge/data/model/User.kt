@@ -4,9 +4,8 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 
 @IgnoreExtraProperties
 data class User(
-    val uid: String = "",
+    val id: String = "",
     val email: String? = "",
     val name: String = "",
-    val avatarUrl: String = "",
     val role: String = "cliente"
 )

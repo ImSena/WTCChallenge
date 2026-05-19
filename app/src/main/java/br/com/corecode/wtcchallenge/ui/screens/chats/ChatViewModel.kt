@@ -1,6 +1,5 @@
 package br.com.corecode.wtcchallenge.ui.screens.chats
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.corecode.wtcchallenge.data.repository.ChatRepository
@@ -14,9 +13,10 @@ import kotlinx.coroutines.launch
 import br.com.corecode.wtcchallenge.domain.model.Chat
 
 class ChatViewModel(
-    private val repository: ChatRepository = ChatRepository(),
+    private val repository: ChatRepository,
     private val sessionRepository: SessionRepository
 ): ViewModel() {
+
     private val _chatList = MutableStateFlow<Result<List<Chat>>>(Result.success(emptyList()))
     val chatList: StateFlow<Result<List<Chat>>> = _chatList.asStateFlow()
 
@@ -67,5 +67,4 @@ class ChatViewModel(
             onComplete(result)
         }
     }
-
 }

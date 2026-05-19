@@ -1,11 +1,14 @@
 package br.com.corecode.wtcchallenge.data.repository
 
 import br.com.corecode.wtcchallenge.data.model.User
+import br.com.corecode.wtcchallenge.data.network.LoginPayload
+import br.com.corecode.wtcchallenge.data.network.RetrofitClient
 import br.com.corecode.wtcchallenge.domain.repository.IUserRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
 
 class UserRepository(
@@ -16,25 +19,39 @@ class UserRepository(
     private val db = Firebase.firestore
     private val usersCollection = db.collection("users")
 
+    private val authService = RetrofitClient.getAuthService()
+
     override suspend fun login(email: String, password: String): Result<User> {
         return try{
-            val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-            val firebaseUser = authResult.user
 
-            if(firebaseUser != null){
-                val userDoc = usersCollection.document(firebaseUser.uid).get().await()
-                val user = userDoc.toObject<User>()
+            val fcmToken = try {
+                FirebaseMessaging.getInstance().token.await()
+            }catch(e: Exception){
+                null
+            }
 
-                if(user != null){
-                    sessionRepository.saveSession(firebaseUser.uid, user.role)
-                    val completeUser = user.copy(uid = firebaseUser.uid)
-                    Result.success(completeUser)
-                }else{
-                    Result.failure(Exception("Não foi possível encontrar usuário"))
-                }
+            val payload = LoginPayload(email, password, fcmToken)
+            val response = authService.login(payload)
 
-            }else{
-                Result.failure(Exception("Usuário não encontrado."))
+            if (response.isSuccessful && response.body() != null) {
+                val loginResponse = response.body()!!
+
+                sessionRepository.saveSession(
+                    uid = loginResponse.uid,
+                    role = loginResponse.role,
+                    token = loginResponse.token
+                )
+
+                val authenticatedUser = User(
+                    id = loginResponse.uid,
+                    name = loginResponse.name,
+                    email = email,
+                    role = loginResponse.role
+                )
+
+                Result.success(authenticatedUser)
+            } else {
+                Result.failure(Exception("E-mail ou senha inválidos no servidor local."))
             }
         }catch(e: Exception){
             Result.failure(e)
@@ -42,11 +59,10 @@ class UserRepository(
     }
 
     override suspend fun logout(): Result<Unit> {
-        return try{
-            firebaseAuth.signOut()
+        return try {
             sessionRepository.clearSession()
             Result.success(Unit)
-        }catch(e: Exception){
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }
